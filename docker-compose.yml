@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - inventory-network
+
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth-service
+      - product-service
+      - inventory-service
+    networks:
+      - inventory-network
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-my-super-secret-key-change-in-production}
+
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongodb
+    networks:
+      - inventory-network
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/auth-db
+      - JWT_SECRET=${JWT_SECRET:-my-super-secret-key-change-in-production}
+
+  product-service:
+    build: ./product-service
+    container_name: product-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - mongodb
+    networks:
+      - inventory-network
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/product-db
+      - INVENTORY_SERVICE_URL=http://inventory-service:8083
+
+  inventory-service:
+    build: ./inventory-service
+    container_name: inventory-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mongodb
+    networks:
+      - inventory-network
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/inventory-db
+
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - inventory-network
+
+networks:
+  inventory-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
