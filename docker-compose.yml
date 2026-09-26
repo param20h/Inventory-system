@@ -24,6 +24,9 @@ services:
       - inventory-network
     environment:
       - JWT_SECRET=${JWT_SECRET:-my-super-secret-key-change-in-production}
+      - AUTH_SERVICE_HOSTPORT=auth-service:8081
+      - PRODUCT_SERVICE_HOSTPORT=product-service:8082
+      - INVENTORY_SERVICE_HOSTPORT=inventory-service:8083
 
   auth-service:
     build: ./auth-service
@@ -48,8 +51,8 @@ services:
     networks:
       - inventory-network
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/product-db
-      - INVENTORY_SERVICE_URL=http://inventory-service:8083
+      - MONGODB_URI=mongodb://mongodb:27017/product-db
+      - INVENTORY_SERVICE_HOSTPORT=inventory-service:8083
 
   inventory-service:
     build: ./inventory-service
@@ -61,7 +64,7 @@ services:
     networks:
       - inventory-network
     environment:
-      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/inventory-db
+      - MONGODB_URI=mongodb://mongodb:27017/inventory-db
 
   frontend:
     build: ./frontend

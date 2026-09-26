@@ -1,0 +1,74 @@
+envVarGroups:
+  - name: inventory-shared
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+
+services:
+  - type: web
+    runtime: docker
+    name: inventory-api-gateway
+    plan: free
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    envVars:
+      - fromGroup: inventory-shared
+      - key: PORT
+        value: 10000
+      - key: AUTH_SERVICE_HOSTPORT
+        fromService:
+          type: web
+          name: inventory-auth-service
+          property: hostport
+      - key: PRODUCT_SERVICE_HOSTPORT
+        fromService:
+          type: web
+          name: inventory-product-service
+          property: hostport
+      - key: INVENTORY_SERVICE_HOSTPORT
+        fromService:
+          type: web
+          name: inventory-inventory-service
+          property: hostport
+
+  - type: web
+    runtime: docker
+    name: inventory-auth-service
+    plan: free
+    dockerfilePath: ./auth-service/Dockerfile
+    dockerContext: ./auth-service
+    envVars:
+      - fromGroup: inventory-shared
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+
+  - type: web
+    runtime: docker
+    name: inventory-product-service
+    plan: free
+    dockerfilePath: ./product-service/Dockerfile
+    dockerContext: ./product-service
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: INVENTORY_SERVICE_HOSTPORT
+        fromService:
+          type: web
+          name: inventory-inventory-service
+          property: hostport
+
+  - type: web
+    runtime: docker
+    name: inventory-inventory-service
+    plan: free
+    dockerfilePath: ./inventory-service/Dockerfile
+    dockerContext: ./inventory-service
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false

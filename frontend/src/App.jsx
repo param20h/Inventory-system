@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import { LayoutDashboard, Package, Boxes, Users, Settings, LogOut, Search, Bell, X, User, Save, Shield, Mail, Sun, Moon } from 'lucide-react'
 import Dashboard from './components/Dashboard'
 import Login from './components/Login'
-import axios from 'axios'
+import api from './api'
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem('token') || null)
@@ -15,7 +15,7 @@ export default function App() {
     setUsername(newUsername)
     localStorage.setItem('token', newToken)
     localStorage.setItem('username', newUsername)
-    axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
+    api.defaults.headers.common['Authorization'] = `Bearer ${newToken}`
   }
 
   const handleLogout = () => {
@@ -23,11 +23,11 @@ export default function App() {
     setUsername('')
     localStorage.removeItem('token')
     localStorage.removeItem('username')
-    delete axios.defaults.headers.common['Authorization']
+    delete api.defaults.headers.common['Authorization']
   }
 
-  if (token && !axios.defaults.headers.common['Authorization']) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+  if (token && !api.defaults.headers.common['Authorization']) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`
   }
 
   if (!token) {

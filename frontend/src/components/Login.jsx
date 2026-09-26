@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { LogIn, UserPlus } from 'lucide-react';
 
 export default function Login({ onLogin }) {
@@ -13,12 +13,12 @@ export default function Login({ onLogin }) {
     setError('');
     try {
       if (isLogin) {
-        const res = await axios.post('http://localhost:8080/api/auth/login', { username, password });
+        const res = await api.post('/api/auth/login', { username, password });
         onLogin(res.data.token, username);
       } else {
-        await axios.post('http://localhost:8080/api/auth/register', { username, password, role: 'ADMIN' });
+        await api.post('/api/auth/register', { username, password, role: 'ADMIN' });
         // After register, automatically log in
-        const res = await axios.post('http://localhost:8080/api/auth/login', { username, password });
+        const res = await api.post('/api/auth/login', { username, password });
         onLogin(res.data.token, username);
       }
     } catch (err) {

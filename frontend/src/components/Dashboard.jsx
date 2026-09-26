@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api';
 import { Package, TrendingUp, AlertTriangle, XCircle, Plus, X } from 'lucide-react';
 
 export default function Dashboard({ searchQuery, mode, onProductsUpdate }) {
@@ -12,13 +12,13 @@ export default function Dashboard({ searchQuery, mode, onProductsUpdate }) {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/products');
+      const res = await api.get('/api/products');
       const productsData = res.data;
       
       // Fetch stock for each product
       const productsWithStock = await Promise.all(productsData.map(async (p) => {
         try {
-          const invRes = await axios.get(`http://localhost:8080/api/inventory/${p.id}`);
+          const invRes = await api.get(`/api/inventory/${p.id}`);
           return { ...p, stock: invRes.data?.quantity || 0 };
         } catch (e) {
           return { ...p, stock: 0 };
@@ -206,7 +206,7 @@ function AddProductModal({ onClose, onSuccess }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post('http://localhost:8080/api/products', {
+      await api.post('/api/products', {
         ...formData,
         price: parseFloat(formData.price)
       });
@@ -258,7 +258,7 @@ function AddStockModal({ products, onClose, onSuccess }) {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`http://localhost:8080/api/inventory/add?productId=${formData.productId}&quantity=${formData.quantity}`);
+      await api.post(`/api/inventory/add?productId=${formData.productId}&quantity=${formData.quantity}`);
       onSuccess();
     } catch (err) {
       setError(err.response?.data?.message || err.message || 'Failed to add stock');
